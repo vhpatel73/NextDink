@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "710399343176",
+    "project_id": "nextdink-11",
+    "storage_bucket": "nextdink-11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:710399343176:android:1040273a2736ab2bbef67d",
+        "android_client_info": {
+          "package_name": "com.vhpatel73.nextdink"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "710399343176-rebglnmda21dnaipst184922icvua3qv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAg6tV216lYExeG2vU1bXcvf9691oTIIXE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "710399343176-rebglnmda21dnaipst184922icvua3qv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "710399343176-fdoaev51g057t4p8ko7hk6jpsh2ag9vb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vhpatel73.nextdink"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
