@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+import '../services/firestore_service.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -23,7 +25,9 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMockCourts();
+    if (!kIsWeb) {
+      _loadMockCourts();
+    }
   }
 
   void _loadMockCourts() {
@@ -83,11 +87,21 @@ class _MapScreenState extends State<MapScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Scheduled game at $courtName!')),
-                  );
+                onPressed: () async {
+                  // Book the game for tomorrow at 5 PM as a default prototype
+                  final scheduledTime = DateTime.now()
+                      .add(const Duration(days: 1))
+                      .copyWith(hour: 17, minute: 0, second: 0);
+
+                  await FirestoreService().bookGame(courtName, scheduledTime);
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    Navigator.pop(context); // Go back to Dashboard too
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Scheduled game at $courtName!')),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.check_circle_outline, color: Colors.black),
                 label: const Text(
@@ -118,18 +132,49 @@ class _MapScreenState extends State<MapScreen> {
         elevation: 0,
       ),
       extendBodyBehindAppBar: true,
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: _initialPosition,
-        markers: _markers,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
-        compassEnabled: false,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-          // Normally we'd set dark mode styling string here for the map tiles
-        },
-      ),
+      body: kIsWeb
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.map, size: 80, color: Color(0xFFD4F82B)),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Map UI Disabled for Web Testing',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "We're skipping Google Cloud map limits locally.",
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () => _showBookingSheet('Web Developer Pickleball Court'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4F82B),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Simulate Booking a Court',
+                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : GoogleMap(
+              mapType: MapType.normal,
+              initialCameraPosition: _initialPosition,
+              markers: _markers,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              compassEnabled: false,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+                // Normally we'd set dark mode styling string here for the map tiles
+              },
+            ),
     );
   }
 }
