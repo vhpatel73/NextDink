@@ -42,4 +42,35 @@ class FirestoreService {
           return games;
         });
   }
+
+  // Join a game via Deep Link ID
+  Future<String> joinGame(String gameId) async {
+    final user = _auth.currentUser;
+    if (user == null) return "You must be logged in to join.";
+
+    final gameRef = _db.collection('games').doc(gameId);
+    
+    return await _db.runTransaction((transaction) async {
+      final snapshot = await transaction.get(gameRef);
+      if (!snapshot.exists) {
+        return "This game does not exist or was deleted.";
+      }
+
+      final game = Game.fromFirestore(snapshot);
+      if (game.players.contains(user.uid)) {
+        return "You are already a player in this game!";
+      }
+
+      if (game.players.length >= game.maxPlayers) {
+        return "This game is already full!";
+      }
+
+      // Add the user to the array
+      transaction.update(gameRef, {
+        'players': FieldValue.arrayUnion([user.uid])
+      });
+
+      return "Success";
+    });
+  }
 }

@@ -1,1 +1,16 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"nextdink-11","appId":"1:710399343176:android:1040273a2736ab2bbef67d","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"nextdink-11","appId":"1:710399343176:ios:fbcad543b1c688b8bef67d","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"nextdink-11","appId":"1:710399343176:ios:fbcad543b1c688b8bef67d","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"nextdink-11","configurations":{"android":"1:710399343176:android:1040273a2736ab2bbef67d","ios":"1:710399343176:ios:fbcad543b1c688b8bef67d","macos":"1:710399343176:ios:fbcad543b1c688b8bef67d","web":"1:710399343176:web:026be8dd8bb62b25bef67d","windows":"1:710399343176:web:e54ff587a8d7f5f3bef67d"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

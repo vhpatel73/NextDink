@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 import '../models/game.dart';
@@ -72,7 +73,19 @@ class HomeScreen extends StatelessWidget {
                         child: ListTile(
                           title: Text(game.locationName, style: const TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text('Time: $dateString'),
-                          trailing: Text('${game.players.length} / ${game.maxPlayers} Spots'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('${game.players.length} / ${game.maxPlayers} Spots'),
+                              IconButton(
+                                icon: const Icon(Icons.ios_share, color: Color(0xFFD4F82B)),
+                                onPressed: () {
+                                  final inviteLink = 'https://nextdink.web.app/join?gameId=${game.id}';
+                                  Share.share('Dink with me! Join my Pickleball game at ${game.locationName}\n\nTap here to accept: $inviteLink');
+                                },
+                              ),
+                            ],
+                          ),
                           onTap: () {
                             // TODO: Open Game Roster view
                           },
