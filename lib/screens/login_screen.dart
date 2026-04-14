@@ -89,9 +89,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
           // Foreground UI
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 450),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                  child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -190,6 +193,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     ),
                   const Spacer(flex: 1),
                 ],
+              ),
+                ),
               ),
             ),
           ),

@@ -27,9 +27,11 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             if (user?.photoURL != null)
               CircleAvatar(
                 radius: 40,
@@ -158,6 +160,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

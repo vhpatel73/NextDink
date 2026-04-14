@@ -102,8 +102,11 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Stepper(
-        currentStep: _currentStep,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: Stepper(
+            currentStep: _currentStep,
         onStepContinue: () {
           if (_currentStep == 0 && _selectedLocation == null && _locationController.text.trim().isEmpty) return;
           if (_currentStep == 0 && _selectedLocation == null) {
@@ -245,6 +248,8 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }
