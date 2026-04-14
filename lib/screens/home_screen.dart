@@ -5,6 +5,7 @@ import '../services/firestore_service.dart';
 import '../models/game.dart';
 import 'wizard_screen.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,7 +16,21 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.sports_tennis_rounded, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'NextDink', 
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w900, 
+                letterSpacing: -1.0,
+                color: Colors.white,
+              )
+            ),
+          ],
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
