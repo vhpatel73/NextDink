@@ -7,6 +7,16 @@ import 'wizard_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
+// Returns up to 2 uppercase initials from a name or email string
+String _getInitials(String name) {
+  final parts = name.trim().split(RegExp(r'[\s@._]+'));
+  if (parts.length >= 2 && parts[1].isNotEmpty) {
+    return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+  }
+  return parts[0].isNotEmpty ? parts[0][0].toUpperCase() : 'P';
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -26,7 +36,7 @@ class HomeScreen extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontWeight: FontWeight.w900, 
                 letterSpacing: -1.0,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.primary,
               )
             ),
           ],
@@ -47,11 +57,23 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-            if (user?.photoURL != null)
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(user!.photoURL!),
-              ),
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              backgroundImage: (user?.photoURL != null && user!.photoURL!.isNotEmpty)
+                  ? NetworkImage(user.photoURL!)
+                  : null,
+              child: (user?.photoURL == null || user!.photoURL!.isEmpty)
+                  ? Text(
+                      _getInitials(user?.displayName ?? user?.email ?? 'P'),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    )
+                  : null,
+            ),
             const SizedBox(height: 16),
             Text(
               'Welcome, ${user?.displayName ?? 'Player'}!',
