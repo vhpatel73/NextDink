@@ -23,10 +23,17 @@ class _MapScreenState extends State<MapScreen> {
 
   final Set<Marker> _markers = {};
   
+  bool get _isLocalhost {
+    if (!kIsWeb) return false;
+    final host = Uri.base.host;
+    return host == 'localhost' || host == '127.0.0.1';
+  }
+
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb) {
+    // Load mock courts on native AND production web, just not on localhost
+    if (!_isLocalhost) {
       _loadMockCourts();
     }
   }
@@ -137,7 +144,7 @@ class _MapScreenState extends State<MapScreen> {
         elevation: 0,
       ),
       extendBodyBehindAppBar: true,
-      body: kIsWeb
+      body: _isLocalhost
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -145,23 +152,24 @@ class _MapScreenState extends State<MapScreen> {
                   const Icon(Icons.map, size: 80, color: Color(0xFFD4F82B)),
                   const SizedBox(height: 24),
                   const Text(
-                    'Map UI Disabled for Web Testing',
+                    'Map Picker',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "We're skipping Google Cloud map limits locally.",
+                    'Maps use the production API key.\nEnter court name manually on localhost.',
+                    textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white54),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
-                    onPressed: () => _showBookingSheet('Web Developer Pickleball Court'),
+                    onPressed: () => _showBookingSheet('Localhost Test Court'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD4F82B),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                     child: const Text(
-                      'Simulate Booking a Court',
+                      'Simulate Selecting a Court',
                       style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -177,7 +185,6 @@ class _MapScreenState extends State<MapScreen> {
               compassEnabled: false,
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
-                // Normally we'd set dark mode styling string here for the map tiles
               },
             ),
     );
