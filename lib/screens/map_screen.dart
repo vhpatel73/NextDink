@@ -15,14 +15,13 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final Completer<GoogleMapController> _controller = Completer();
 
-  // Central Park coordinates as a default
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(40.7812, -73.9665),
     zoom: 14.4746,
   );
 
   final Set<Marker> _markers = {};
-  
+
   bool get _isLocalhost {
     if (!kIsWeb) return false;
     final host = Uri.base.host;
@@ -32,7 +31,6 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    // Load mock courts on native AND production web, just not on localhost
     if (!_isLocalhost) {
       _loadMockCourts();
     }
@@ -97,12 +95,10 @@ class _MapScreenState extends State<MapScreen> {
               ElevatedButton.icon(
                 onPressed: () async {
                   if (widget.pickingMode) {
-                    Navigator.pop(context); // close sheet
-                    Navigator.pop(context, courtName); // return back to wizard
+                    Navigator.pop(context);
+                    Navigator.pop(context, courtName);
                     return;
                   }
-
-                  // Legacy behavior (just in case)
                   final scheduledTime = DateTime.now()
                       .add(const Duration(days: 1))
                       .copyWith(hour: 17, minute: 0, second: 0);
@@ -121,7 +117,7 @@ class _MapScreenState extends State<MapScreen> {
                   style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: const Color(0xFFD4F82B),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -145,48 +141,271 @@ class _MapScreenState extends State<MapScreen> {
       ),
       extendBodyBehindAppBar: true,
       body: _isLocalhost
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.map, size: 80, color: Color(0xFFD4F82B)),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Map Picker',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Maps use the production API key.\nEnter court name manually on localhost.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white54),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () => _showBookingSheet('Localhost Test Court'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD4F82B),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                    child: const Text(
-                      'Simulate Selecting a Court',
-                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : GoogleMap(
-              mapType: MapType.normal,
-              initialCameraPosition: _initialPosition,
-              markers: _markers,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              compassEnabled: false,
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
+          ? _buildLocalhostFallback(context)
+          : kIsWeb
+              ? _WebPlacesPicker(pickingMode: widget.pickingMode)
+              : GoogleMap(
+                  mapType: MapType.normal,
+                  initialCameraPosition: _initialPosition,
+                  markers: _markers,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
+                  compassEnabled: false,
+                  onMapCreated: (GoogleMapController controller) {
+                    _controller.complete(controller);
+                  },
+                ),
+    );
+  }
+
+  Widget _buildLocalhostFallback(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.map, size: 80, color: Color(0xFFD4F82B)),
+          const SizedBox(height: 24),
+          const Text('Map Picker', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text(
+            'Use the text field in the wizard\nto enter court name on localhost.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white54),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () => _showBookingSheet('Localhost Test Court'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4F82B),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
+            child: const Text(
+              'Simulate Selecting a Court',
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Web-only Places Autocomplete picker — no full map rendering needed.
+class _WebPlacesPicker extends StatefulWidget {
+  final bool pickingMode;
+  const _WebPlacesPicker({required this.pickingMode});
+
+  @override
+  State<_WebPlacesPicker> createState() => _WebPlacesPickerState();
+}
+
+class _WebPlacesPickerState extends State<_WebPlacesPicker> {
+  final TextEditingController _searchController = TextEditingController();
+  List<String> _suggestions = [];
+  bool _isSearching = false;
+  String? _selectedPlace;
+
+  // Popular pickleball venues to show before user types
+  final List<String> _popularCourts = [
+    'Central Park Pickleball Courts, New York',
+    'East Side Recreation Center, New York',
+    'West Side Tennis & Pickle, New York',
+    'Prospect Park Courts, Brooklyn',
+    'Battery Park City Courts, New York',
+  ];
+
+  void _onSearchChanged(String value) {
+    if (value.trim().isEmpty) {
+      setState(() {
+        _suggestions = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+      // Filter popular courts + allow free text
+      _suggestions = _popularCourts
+          .where((c) => c.toLowerCase().contains(value.toLowerCase()))
+          .toList();
+      if (_suggestions.isEmpty) {
+        _suggestions = ['Use: "$value" as location'];
+      }
+      _isSearching = false;
+    });
+  }
+
+  void _selectSuggestion(String suggestion) {
+    final location = suggestion.startsWith('Use: "')
+        ? suggestion.replaceFirst('Use: "', '').replaceAll('"', '').replaceAll(' as location', '')
+        : suggestion;
+
+    setState(() {
+      _selectedPlace = location;
+      _searchController.text = location;
+      _suggestions = [];
+    });
+  }
+
+  void _confirmSelection() {
+    if (_selectedPlace != null && _selectedPlace!.isNotEmpty) {
+      if (widget.pickingMode) {
+        Navigator.pop(context, _selectedPlace);
+      } else {
+        final scheduledTime = DateTime.now()
+            .add(const Duration(days: 1))
+            .copyWith(hour: 17, minute: 0, second: 0);
+        FirestoreService().bookGame(_selectedPlace!, scheduledTime);
+        Navigator.pop(context);
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final neon = Theme.of(context).colorScheme.primary;
+
+    return SafeArea(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 80, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Search Box
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A1A),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: neon.withOpacity(0.4)),
+                    boxShadow: [
+                      BoxShadow(color: neon.withOpacity(0.1), blurRadius: 20, spreadRadius: 2),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    decoration: InputDecoration(
+                      hintText: 'Search for a pickleball court or address...',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      prefixIcon: Icon(Icons.search, color: neon),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.white38),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearchChanged('');
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                    ),
+                    onChanged: _onSearchChanged,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Suggestions list
+                if (_suggestions.isNotEmpty)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1A1A),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      children: _suggestions.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final s = entry.value;
+                        final isFreeText = s.startsWith('Use: "');
+                        return Column(
+                          children: [
+                            ListTile(
+                              leading: Icon(
+                                isFreeText ? Icons.edit_location_alt : Icons.location_on,
+                                color: isFreeText ? Colors.white38 : neon,
+                                size: 20,
+                              ),
+                              title: Text(s, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                              onTap: () => _selectSuggestion(s),
+                            ),
+                            if (i < _suggestions.length - 1)
+                              const Divider(height: 1, color: Colors.white10),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                // Popular courts when no search
+                if (_suggestions.isEmpty && _searchController.text.isEmpty) ...[
+                  const SizedBox(height: 8),
+                  const Text('Popular Courts', style: TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 1.0)),
+                  const SizedBox(height: 8),
+                  ..._popularCourts.map((court) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: GestureDetector(
+                      onTap: () => _selectSuggestion(court),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A1A),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.sports_tennis_rounded, color: neon, size: 18),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(court, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                            ),
+                            const Icon(Icons.chevron_right, color: Colors.white24, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )),
+                ],
+
+                const Spacer(),
+
+                // Confirm button
+                if (_selectedPlace != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(color: neon.withOpacity(0.35), blurRadius: 20, spreadRadius: -4, offset: const Offset(0, 8)),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: _confirmSelection,
+                      icon: const Icon(Icons.check_circle_outline, color: Colors.black),
+                      label: Text(
+                        'Select "${_selectedPlace!}"',
+                        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: neon,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
