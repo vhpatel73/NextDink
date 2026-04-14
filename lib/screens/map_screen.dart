@@ -5,7 +5,8 @@ import 'dart:async';
 import '../services/firestore_service.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final bool pickingMode;
+  const MapScreen({super.key, this.pickingMode = false});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -88,25 +89,29 @@ class _MapScreenState extends State<MapScreen> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () async {
-                  // Book the game for tomorrow at 5 PM as a default prototype
+                  if (widget.pickingMode) {
+                    Navigator.pop(context); // close sheet
+                    Navigator.pop(context, courtName); // return back to wizard
+                    return;
+                  }
+
+                  // Legacy behavior (just in case)
                   final scheduledTime = DateTime.now()
                       .add(const Duration(days: 1))
                       .copyWith(hour: 17, minute: 0, second: 0);
-
                   await FirestoreService().bookGame(courtName, scheduledTime);
-
                   if (context.mounted) {
                     Navigator.pop(context);
-                    Navigator.pop(context); // Go back to Dashboard too
+                    Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Scheduled game at $courtName!')),
                     );
                   }
                 },
                 icon: const Icon(Icons.check_circle_outline, color: Colors.black),
-                label: const Text(
-                  'Book a Game Here',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                label: Text(
+                  widget.pickingMode ? 'Select this Court' : 'Book a Game Here',
+                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,

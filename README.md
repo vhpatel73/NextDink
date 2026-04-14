@@ -9,7 +9,7 @@ Find nearby courts, schedule matchups, and seamlessly invite friends to play via
 * **Secure Authentication**: Frictionless login utilizing Google Identity Services (OAuth 2.0).
 * **Interactive Court Discovery**: Integrated Google Maps SDK for visually locating nearby Pickleball parks and facilities.
 * **Real-time Matchmaking Dashboard**: Cloud Firestore integration instantly syncs and streams your upcoming booked games natively to your Dashboard.
-* **Native Deep Linking**: Generate and share `nextdink.web.app/join?gameId=XYZ` links via OS Share Sheets that automatically open the app and group friends into your roster.
+* **Native Deep Linking**: Generate and share `nextdink-11.web.app/join?gameId=XYZ` links via OS Share Sheets that automatically open the app and group friends into your roster.
 * **Cross-Platform Ready**: Designed from the ground up for iOS, Android, and Web deployment.
 
 ## 🛠 Tech Stack

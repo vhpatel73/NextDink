@@ -3,7 +3,8 @@ import 'package:share_plus/share_plus.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 import '../models/game.dart';
-import 'map_screen.dart';
+import 'wizard_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -67,28 +68,88 @@ class HomeScreen extends StatelessWidget {
                       final dateData = game.scheduledTime;
                       final dateString = "${dateData.month}/${dateData.day} @ ${dateData.hour}:${dateData.minute.toString().padLeft(2, '0')}";
                       
+                      final isOrganizer = game.players.isNotEmpty && game.players.first == user?.uid;
+                      
                       return Card(
                         color: const Color(0xFF1E1E1E),
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: ListTile(
-                          title: Text(game.locationName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('Time: $dateString'),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('${game.players.length} / ${game.maxPlayers} Spots'),
-                              IconButton(
-                                icon: const Icon(Icons.ios_share, color: Color(0xFFD4F82B)),
-                                onPressed: () {
-                                  final inviteLink = 'https://nextdink.web.app/join?gameId=${game.id}';
-                                  Share.share('Dink with me! Join my Pickleball game at ${game.locationName}\n\nTap here to accept: $inviteLink');
-                                },
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(game.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                        Text('Time: $dateString', style: const TextStyle(color: Colors.white70)),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text('${game.players.length}/${game.maxPlayers}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        icon: const Icon(Icons.ios_share, color: Color(0xFFD4F82B)),
+                                        onPressed: () {
+                                          final String baseUrl = kIsWeb ? Uri.base.origin : 'https://nextdink-11.web.app';
+                                          final inviteLink = '$baseUrl/join?gameId=${game.id}';
+                                          Share.share('Dink with me! Join my Pickleball game at ${game.locationName}\n\nTap here to accept: $inviteLink');
+                                        },
+                                      ),
+                                      if (isOrganizer)
+                                        IconButton(
+                                          padding: const EdgeInsets.only(left: 8),
+                                          constraints: const BoxConstraints(),
+                                          icon: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
+                                          tooltip: 'Cancel Game',
+                                          onPressed: () => FirestoreService().deleteGame(game.id),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              const Text('Roster:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white54)),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: game.players.map((uid) {
+                                  final profile = game.playerProfiles[uid] ?? {};
+                                  final playerName = profile['name'] ?? 'Unknown Player';
+                                  final photoUrl = profile['photoUrl'] ?? '';
+                                  final isMe = uid == user?.uid;
+                                  
+                                  // I can leave if I am NOT the organizer (organizers must outright cancel the game)
+                                  // I can kick someone if I AM the organizer
+                                  final showRemove = (isMe && !isOrganizer) || (isOrganizer && !isMe);
+
+                                  return Chip(
+                                    avatar: CircleAvatar(
+                                      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                      backgroundColor: Colors.grey.shade800,
+                                      child: photoUrl.isEmpty ? Text(playerName[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 10)) : null,
+                                    ),
+                                    label: Text(playerName),
+                                    backgroundColor: Colors.black26,
+                                    labelStyle: const TextStyle(color: Colors.white),
+                                    deleteIcon: showRemove ? const Icon(Icons.close, size: 16) : null,
+                                    onDeleted: showRemove
+                                        ? () => FirestoreService().leaveGame(game.id, uid)
+                                        : null,
+                                  );
+                                }).toList(),
                               ),
                             ],
                           ),
-                          onTap: () {
-                            // TODO: Open Game Roster view
-                          },
                         ),
                       );
                     },
@@ -103,7 +164,7 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const MapScreen()),
+            MaterialPageRoute(builder: (context) => const CreateGameWizardScreen()),
           );
         },
         icon: const Icon(Icons.add, color: Colors.black),

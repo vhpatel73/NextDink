@@ -1,7 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
+  // Singleton pattern to prevent re-initializing Google Sign-In on every UI rebuild
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal();
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId: '710399343176-rebglnmda21dnaipst184922icvua3qv.apps.googleusercontent.com',
@@ -32,8 +38,21 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      // Once signed in, return the UserCredential
-      return await _auth.signInWithCredential(credential);
+      // Once signed in, capture the credential
+      final userCredential = await _auth.signInWithCredential(credential);
+      
+      // Upsert the user into the global users collection
+      final user = userCredential.user;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'name': user.displayName ?? 'Unknown Player',
+          'email': user.email ?? '',
+          'photoUrl': user.photoURL ?? '',
+          'lastLogin': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+
+      return userCredential;
     } catch (e) {
       print('Error signing in with Google: $e');
       return null;
