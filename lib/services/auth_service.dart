@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/audit_log.dart';
+import 'logging_service.dart';
 
 class AuthService {
   // Singleton pattern to prevent re-initializing Google Sign-In on every UI rebuild
@@ -50,6 +52,11 @@ class AuthService {
           'photoUrl': user.photoURL ?? '',
           'lastLogin': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+
+        // AUDIT LOG
+        LoggingService().logAction(AuditLogAction.userLogin, {
+          'method': 'Google',
+        });
       }
 
       return userCredential;
@@ -60,6 +67,9 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    // Log before signing out so we have user context
+    await LoggingService().logAction(AuditLogAction.userLogout, {});
+    
     await _googleSignIn.signOut();
     await _auth.signOut();
   }

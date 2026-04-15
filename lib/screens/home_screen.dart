@@ -6,6 +6,7 @@ import '../services/firestore_service.dart';
 import '../models/game.dart';
 import 'wizard_screen.dart';
 import '../widgets/app_footer.dart';
+import 'admin_logs_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -70,6 +71,58 @@ class HomeScreen extends StatelessWidget {
             tooltip: 'Sign Out',
           )
         ],
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: const Color(0xFF050501),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
+                      child: user?.photoURL == null ? const Icon(Icons.person) : null,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(user?.displayName ?? 'Player', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.dashboard, color: Color(0xFFD4F82B)),
+                title: const Text('My Dashboard'),
+                onTap: () => Navigator.pop(context),
+              ),
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings_outlined, color: Colors.orange),
+                title: const Text('Admin Audit Logs'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminAuditLogsScreen()),
+                  );
+                },
+              ),
+              const Divider(color: Colors.white10),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.redAccent),
+                title: const Text('Logout'),
+                onTap: () async {
+                  await AuthService().signOut();
+                  if (context.mounted) Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
       ),
       body: Center(
         child: ConstrainedBox(

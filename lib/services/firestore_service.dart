@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/game.dart';
+import '../models/audit_log.dart';
+import 'logging_service.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final LoggingService _logger = LoggingService();
 
   // Book a new game and immediately return its Firestore ID for Deep Linking
   Future<String> createGameAndGetId(String locationName, DateTime scheduledTime) async {
@@ -38,6 +41,14 @@ class FirestoreService {
     );
 
     await gameRef.set(newGame.toFirestore());
+
+    // AUDIT LOG
+    _logger.logAction(AuditLogAction.createGame, {
+      'gameId': gameRef.id,
+      'location': locationName,
+      'time': scheduledTime.toIso8601String(),
+    });
+
     return gameRef.id;
   }
 
@@ -81,7 +92,7 @@ class FirestoreService {
 
     final gameRef = _db.collection('games').doc(gameId);
     
-    return await _db.runTransaction((transaction) async {
+    final result = await _db.runTransaction((transaction) async {
       final snapshot = await transaction.get(gameRef);
       if (!snapshot.exists) {
         return "This game does not exist or was deleted.";
@@ -119,6 +130,15 @@ class FirestoreService {
 
       return "Success";
     });
+
+    if (result == "Success") {
+      _logger.logAction(AuditLogAction.adminAccess, {
+        'gameId': gameId,
+        'activity': 'Player Joined Match',
+      });
+    }
+
+    return result;
   }
 
   // Leave a game or kick a player
@@ -133,10 +153,20 @@ class FirestoreService {
       'players': FieldValue.arrayRemove([uidToRemove]),
       'playerProfiles.$uidToRemove': FieldValue.delete(),
     });
+
+    _logger.logAction(AuditLogAction.adminAccess, {
+      'gameId': gameId,
+      'activity': 'Player Left Match',
+      'targetUid': uidToRemove,
+    });
   }
 
   // Soft-cancel a game: marks status as 'Cancelled', never deletes the record
   Future<void> cancelGame(String gameId) async {
     await _db.collection('games').doc(gameId).update({'status': 'Cancelled'});
+    
+    _logger.logAction(AuditLogAction.cancelGame, {
+      'gameId': gameId,
+    });
   }
 }
