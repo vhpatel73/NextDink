@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 import '../models/game.dart';
 import 'wizard_screen.dart';
+import '../widgets/app_footer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,24 +41,6 @@ String _getInitials(String name) {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  Widget _footerLink(String label) {
-    return GestureDetector(
-      onTap: () {}, // Placeholders
-      child: Text(
-        label,
-        style: const TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _footerBullet() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
-      child: Text('•', style: TextStyle(color: Colors.white12, fontSize: 10)),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
     final user = AuthService().currentUser;
 
@@ -149,10 +132,24 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Center(
-                          child: Text(
-                            'No games scheduled yet.',
-                            style: TextStyle(color: Colors.white54, fontSize: 16),
+                        SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: MediaQuery.of(context).size.height - 150, // Enough to push footer
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Spacer(),
+                                const Text(
+                                  'No games scheduled yet.',
+                                  style: TextStyle(color: Colors.white54, fontSize: 16),
+                                ),
+                                const Spacer(),
+                                const AppFooter(),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -163,41 +160,7 @@ class HomeScreen extends StatelessWidget {
                     itemCount: games.length + 1, // Add 1 for the footer
                     itemBuilder: (context, index) {
                       if (index == games.length) {
-                        // ── Footer ──────────────────────────────
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 40.0),
-                          child: Column(
-                            children: [
-                              const Divider(indent: 64, endIndent: 64, color: Colors.white10),
-                              const SizedBox(height: 24),
-                              const Text(
-                                'NextDink v1.1',
-                                style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Dink responsibly! 🥒',
-                                style: TextStyle(color: Colors.white24, fontSize: 11),
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _footerLink('Privacy'),
-                                  _footerBullet(),
-                                  _footerLink('Terms'),
-                                  _footerBullet(),
-                                  _footerLink('Support'),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              const Text(
-                                '© 2026 NextDink',
-                                style: TextStyle(color: Colors.white10, fontSize: 10),
-                              ),
-                            ],
-                          ),
-                        );
+                        return const AppFooter();
                       }
 
                       final game = games[index];

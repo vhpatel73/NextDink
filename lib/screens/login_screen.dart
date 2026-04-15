@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../widgets/app_footer.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -108,124 +109,131 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 800),
-                  child: Column(
-                    children: [
-                      // ── Header ──────────────────────────────
-                      Text(
-                        'NextDink',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -2.0,
-                          color: primaryNeon,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'EVOLVE YOUR GAME',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 4.0,
-                          color: Colors.white38,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 60),
-
-                      // ── Benefits Section ──────────────────────────────
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Text(
-                          'Schedule ༚ Play ༚ Dominate',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      
-                      // Horizontal Scrollable Benefits
-                      SingleChildScrollView(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Row(
-                          children: [
-                            _benefitCard(
-                              'Pure Vitality',
-                              'Low impact, high energy workouts for longevity.',
-                              'assets/vitality.png',
-                            ),
-                            const SizedBox(width: 16),
-                            _benefitCard(
-                              'Instant Squad',
-                              'The fastest growing community in sports.',
-                              'assets/squad.png',
-                            ),
-                            const SizedBox(width: 16),
-                            _benefitCard(
-                              'Total Control',
-                              'Sharpen your reflexes and dominate the kitchen.',
-                              'assets/agility.png',
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 80),
-
-                      // ── Login Button ──────────────────────────────
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                        child: _isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: primaryNeon.withOpacity(0.3),
-                                      blurRadius: 40,
-                                      spreadRadius: -5,
-                                    ),
-                                  ],
-                                ),
-                                child: ElevatedButton.icon(
-                                  onPressed: _signIn,
-                                  icon: const Icon(Icons.login_rounded, color: Colors.black),
-                                  label: const Text('Continue with Google'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: primaryNeon,
-                                    foregroundColor: Colors.black,
-                                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-                                    textStyle: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                  ),
-                                ),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: MediaQuery.of(context).size.height - 80, // Safe area + padding
                               ),
-                      ),
-                      
-                      const SizedBox(height: 40),
-                      Text(
-                        'Join 10,000+ players worldwide',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          color: Colors.white24,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    children: [
+                                      // ── Header ──────────────────────────────
+                                      Text(
+                                        'NextDink',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -2.0,
+                                          color: primaryNeon,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'EVOLVE YOUR GAME',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 4.0,
+                                          color: Colors.white38,
+                                        ),
+                                      ),
+                                      
+                                      const SizedBox(height: 60),
+
+                                      // ── Benefits Section ──────────────────────────────
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                                        child: Text(
+                                          'Schedule ༚ Play ༚ Dominate',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      
+                                      // Horizontal Scrollable Benefits
+                                      SingleChildScrollView(
+                                        controller: _scrollController,
+                                        scrollDirection: Axis.horizontal,
+                                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                                        child: Row(
+                                          children: [
+                                            _benefitCard(
+                                              'Pure Vitality',
+                                              'Low impact, high energy workouts for longevity.',
+                                              'assets/vitality.png',
+                                            ),
+                                            const SizedBox(width: 16),
+                                            _benefitCard(
+                                              'Instant Squad',
+                                              'The fastest growing community in sports.',
+                                              'assets/squad.png',
+                                            ),
+                                            const SizedBox(width: 16),
+                                            _benefitCard(
+                                              'Total Control',
+                                              'Sharpen your reflexes and dominate the kitchen.',
+                                              'assets/agility.png',
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 80),
+
+                                      // ── Login Button ──────────────────────────────
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                        child: _isLoading
+                                            ? const Center(child: CircularProgressIndicator())
+                                            : Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: primaryNeon.withOpacity(0.3),
+                                                      blurRadius: 40,
+                                                      spreadRadius: -5,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: ElevatedButton.icon(
+                                                  onPressed: _signIn,
+                                                  icon: const Icon(Icons.login_rounded, color: Colors.black),
+                                                  label: const Text('Continue with Google'),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: primaryNeon,
+                                                    foregroundColor: Colors.black,
+                                                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
+                                                    textStyle: GoogleFonts.inter(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.w800,
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                  
+                                  const Column(
+                                    children: [
+                                      const AppFooter(),
+                                      SizedBox(height: 20),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                 ),
               ),
             ),
