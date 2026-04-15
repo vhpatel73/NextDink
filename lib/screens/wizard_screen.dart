@@ -13,13 +13,22 @@ class CreateGameWizardScreen extends StatefulWidget {
 
 class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
   int _currentStep = 0;
-  
+
   // Form Data
   String? _selectedLocation;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  
+
   final _locationController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Default to 30 minutes from now
+    final defaultDt = DateTime.now().add(const Duration(minutes: 30));
+    _selectedDate = DateTime(defaultDt.year, defaultDt.month, defaultDt.day);
+    _selectedTime = TimeOfDay.fromDateTime(defaultDt);
+  }
 
   bool get isLocalhost {
     if (!kIsWeb) return false;
@@ -43,7 +52,7 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
   void _pickDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
@@ -55,7 +64,7 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
   void _pickTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: _selectedTime ?? TimeOfDay.now(),
     );
     if (picked != null) {
       if (_selectedDate != null) {
