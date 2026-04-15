@@ -54,3 +54,6 @@ firebase-export-metadata.json
 .env
 .env.*
 *.env
+
+# Firebase CLI
+.firebase/
