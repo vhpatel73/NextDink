@@ -129,14 +129,21 @@ class HomeScreen extends StatelessWidget {
                   if (games.isEmpty) {
                     return Stack(
                       children: [
-                        // Subtle ghost-line artwork in #010101
                         Positioned.fill(
                           child: Center(
-                            child: Opacity(
-                              opacity: 0.8,
-                              child: CustomPaint(
-                                size: const Size(300, 300),
-                                painter: _PickleballSwingPainter(),
+                            child: Container(
+                              width: 300,
+                              height: 300,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: const AssetImage('assets/swing.png'),
+                                  fit: BoxFit.cover,
+                                  colorFilter: ColorFilter.mode(
+                                    const Color(0xFF010101).withOpacity(0.9), 
+                                    BlendMode.srcATop,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -537,54 +544,4 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PickleballSwingPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF010101)
-      ..strokeWidth = 1.2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    
-    // Abstract swing motion
-    path.moveTo(size.width * 0.3, size.height * 0.8);
-    path.quadraticBezierTo(
-      size.width * 0.4, size.height * 0.4,
-      size.width * 0.85, size.height * 0.35
-    );
-
-    // Paddle
-    canvas.save();
-    canvas.translate(size.width * 0.88, size.height * 0.32);
-    canvas.rotate(0.6);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset.zero, width: 28, height: 38),
-        const Radius.circular(6)
-      ),
-      paint
-    );
-    canvas.restore();
-
-    // The Swing Arc
-    final arcPath = Path();
-    arcPath.addArc(
-      Rect.fromCircle(center: Offset(size.width * 0.4, size.height * 0.6), radius: 120),
-      -0.5,
-      1.2
-    );
-    
-    // The Ball
-    canvas.drawCircle(Offset(size.width * 0.75, size.height * 0.45), 5, paint);
-
-    canvas.drawPath(path, paint);
-    canvas.drawPath(arcPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
