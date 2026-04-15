@@ -143,10 +143,30 @@ class HomeScreen extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          game.locationName,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
-                                        ),
+                                        Builder(builder: (_) {
+                                          final parts = game.locationName.split(',');
+                                          final mainName = parts[0].trim();
+                                          final address = parts.length > 1 ? parts.sublist(1).join(',').trim() : null;
+                                          
+                                          return Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                mainName,
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                                              ),
+                                              if (address != null && address.isNotEmpty) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  address,
+                                                  style: const TextStyle(fontSize: 12, color: Colors.white60, fontWeight: FontWeight.w400),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ],
+                                          );
+                                        }),
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
