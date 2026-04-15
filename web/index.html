@@ -36,17 +36,29 @@
 
   <!-- Bridge functions: called from Flutter via dart:js -->
   <script>
-    // Fuzzy autocomplete search via Places AutocompleteService
+    // Pickleball-specific fuzzy autocomplete via Places AutocompleteService
     window._placesSearch = function(input, callback) {
       try {
         var service = new google.maps.places.AutocompleteService();
+        // Append "pickleball court" to bias results toward relevant venues
+        var biasedInput = input + ' pickleball court';
         service.getPlacePredictions(
-          { input: input, componentRestrictions: { country: 'us' } },
+          {
+            input: biasedInput,
+            types: ['establishment'],
+            componentRestrictions: { country: 'us' }
+          },
           function(predictions, status) {
-            if (status === 'OK' && predictions) {
+            if (status === 'OK' && predictions && predictions.length > 0) {
               callback(predictions.map(function(p) { return p.description; }));
             } else {
-              callback([]);
+              // Retry without bias if nothing found — user might be typing an address
+              service.getPlacePredictions(
+                { input: input, types: ['establishment'], componentRestrictions: { country: 'us' } },
+                function(p2, s2) {
+                  callback((s2 === 'OK' && p2) ? p2.slice(0, 4).map(function(p) { return p.description; }) : []);
+                }
+              );
             }
           }
         );

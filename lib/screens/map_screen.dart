@@ -398,6 +398,51 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
                     ),
                   ),
 
+                // Override row — always visible when the user has typed something
+                if (_searchController.text.trim().isNotEmpty && !_isSearching)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: GestureDetector(
+                      onTap: () {
+                        final typed = _searchController.text.trim();
+                        setState(() {
+                          _selectedPlace = typed;
+                          _suggestions = [];
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit_location_alt, color: Colors.white38, size: 18),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(fontSize: 13, color: Colors.white54),
+                                  children: [
+                                    const TextSpan(text: 'Use '),
+                                    TextSpan(
+                                      text: '"${_searchController.text.trim()}"',
+                                      style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
+                                    ),
+                                    const TextSpan(text: ' as the court name'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Nearby courts list (shown when search box is empty)
                 if (_suggestions.isEmpty && _searchController.text.isEmpty) ...[
                   const SizedBox(height: 8),
