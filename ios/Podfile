@@ -8,7 +8,7 @@ def flutter_root
   '/opt/homebrew/share/flutter'
 end
 
-require File.expand_path(File.join('..', 'Flutter', 'podhelper.rb'), __FILE__)
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper.rb'), flutter_root)
 
 target 'Runner' do
   use_frameworks! :linkage => :static
