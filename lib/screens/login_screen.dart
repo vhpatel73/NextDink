@@ -13,6 +13,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final AuthService _authService = AuthService();
   bool _isLoading = false;
   AnimationController? _controller;
+  late final ScrollController _scrollController;
 
   @override
   void initState() {
@@ -21,11 +22,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _controller = AnimationController(
         vsync: this, duration: const Duration(seconds: 15))
       ..repeat(reverse: true);
+
+    _scrollController = ScrollController();
+    
+    // Smoothly center the middle card after layout
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        final viewportWidth = _scrollController.position.viewportDimension;
+        // Calculation: Card1 (260) + Gap (16) + Half of Card2 (130) = 406
+        final centerOffset = 406.0 - (viewportWidth / 2);
+        _scrollController.jumpTo(centerOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller?.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -125,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: Text(
-                          'Why we play',
+                          'Schedule ༚ Play ༚ Dominate',
                           style: GoogleFonts.inter(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
@@ -137,6 +151,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       
                       // Horizontal Scrollable Benefits
                       SingleChildScrollView(
+                        controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: Row(
