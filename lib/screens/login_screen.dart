@@ -89,113 +89,174 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
           // Foreground UI
           SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 450),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 40.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
                   child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Spacer(flex: 3),
-                  
-                  // Premium 3D-esque branding (Shadowed icon)
-                  Container(
-                    decoration: BoxDecoration(
-                       shape: BoxShape.circle,
-                       boxShadow: [
-                         BoxShadow(
-                           color: primaryNeon.withOpacity(0.2),
-                           blurRadius: 40,
-                           spreadRadius: 10,
-                         )
-                       ]
-                    ),
-                    child: Icon(
-                      Icons.sports_tennis_rounded,
-                      size: 90,
-                      color: primaryNeon,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Aggressive Modern Typography
-                  Text(
-                    'NextDink',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 56,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -2.5,
-                      color: primaryNeon,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Clean Minimalist Punchline
-                  Text(
-                    'Schedule, play, and dominate\nthe pickleball court.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      color: Colors.white70,
-                      height: 1.5,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  
-                  const Spacer(flex: 4),
-                  
-                  // Glowing Neon Button
-                  if (_isLoading)
-                    const Center(child: CircularProgressIndicator())
-                  else
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryNeon.withOpacity(0.4),
-                            blurRadius: 30,
-                            spreadRadius: -5,
-                            offset: const Offset(0, 10),
-                          ),
-                          BoxShadow(
-                            color: primaryNeon.withOpacity(0.2),
-                            blurRadius: 60,
-                            spreadRadius: 10,
-                          ),
-                        ],
+                    children: [
+                      // ── Header ──────────────────────────────
+                      Text(
+                        'NextDink',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -2.0,
+                          color: primaryNeon,
+                        ),
                       ),
-                      child: ElevatedButton.icon(
-                        onPressed: _signIn,
-                        icon: const Icon(Icons.login_rounded, color: Colors.black),
-                        label: Text(
-                          'Continue with Google',
+                      const SizedBox(height: 8),
+                      Text(
+                        'EVOLVE YOUR GAME',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 4.0,
+                          color: Colors.white38,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 60),
+
+                      // ── Benefits Section ──────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Text(
+                          'Why we play',
                           style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryNeon,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0, 
                         ),
                       ),
-                    ),
-                  const Spacer(flex: 1),
-                ],
-              ),
+                      const SizedBox(height: 24),
+                      
+                      // Horizontal Scrollable Benefits
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Row(
+                          children: [
+                            _benefitCard(
+                              'Pure Vitality',
+                              'Low impact, high energy workouts for longevity.',
+                              'assets/vitality.png',
+                            ),
+                            const SizedBox(width: 16),
+                            _benefitCard(
+                              'Total Control',
+                              'Sharpen your reflexes and dominate the kitchen.',
+                              'assets/agility.png',
+                            ),
+                            const SizedBox(width: 16),
+                            _benefitCard(
+                              'Instant Squad',
+                              'The fastest growing community in sports.',
+                              'assets/squad.png',
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 80),
+
+                      // ── Login Button ──────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: primaryNeon.withOpacity(0.3),
+                                      blurRadius: 40,
+                                      spreadRadius: -5,
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: _signIn,
+                                  icon: const Icon(Icons.login_rounded, color: Colors.black),
+                                  label: const Text('Continue with Google'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: primaryNeon,
+                                    foregroundColor: Colors.black,
+                                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
+                                    textStyle: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                      ),
+                      
+                      const SizedBox(height: 40),
+                      Text(
+                        'Join 10,000+ players worldwide',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: Colors.white24,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _benefitCard(String title, String desc, String assetPath) {
+    return Container(
+      width: 260,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              assetPath,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            desc,
+            style: GoogleFonts.inter(
+              color: Colors.white54,
+              fontSize: 13,
+              height: 1.4,
             ),
           ),
         ],
