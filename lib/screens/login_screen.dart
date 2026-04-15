@@ -163,15 +163,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(width: 16),
                             _benefitCard(
-                              'Total Control',
-                              'Sharpen your reflexes and dominate the kitchen.',
-                              'assets/agility.png',
-                            ),
-                            const SizedBox(width: 16),
-                            _benefitCard(
                               'Instant Squad',
                               'The fastest growing community in sports.',
                               'assets/squad.png',
+                            ),
+                            const SizedBox(width: 16),
+                            _benefitCard(
+                              'Total Control',
+                              'Sharpen your reflexes and dominate the kitchen.',
+                              'assets/agility.png',
                             ),
                           ],
                         ),
