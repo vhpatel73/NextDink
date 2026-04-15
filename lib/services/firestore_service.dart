@@ -65,9 +65,16 @@ class FirestoreService {
         .map((snapshot) {
           final games = snapshot.docs
               .map((doc) => Game.fromFirestore(doc))
-              .where((g) => g.isVisible) // drops Cancelled + Completed
+              .where((g) => g.isVisible) // filters out Cancelled and already Completed
               .toList();
-          games.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+          
+          // Sort chronologically: In-progress/Soonest games first
+          games.sort((a, b) {
+            int cmp = a.scheduledTime.compareTo(b.scheduledTime);
+            if (cmp != 0) return cmp;
+            return a.id.compareTo(b.id); // stability
+          });
+          
           return games;
         });
   }
