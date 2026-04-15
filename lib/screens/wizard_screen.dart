@@ -154,6 +154,9 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
         steps: [
           Step(
             title: const Text('Court Location', style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: _selectedLocation != null && _currentStep > 0
+                ? Text(_selectedLocation!, style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13))
+                : null,
             isActive: _currentStep >= 0,
             state: _currentStep > 0 ? StepState.complete : StepState.indexed,
             content: Column(
@@ -182,6 +185,12 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
           ),
           Step(
             title: const Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: _selectedDate != null && _selectedTime != null && _currentStep > 1
+                ? Text(
+                    '${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year} at ${_selectedTime!.format(context)}',
+                    style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13),
+                  )
+                : null,
             isActive: _currentStep >= 1,
             state: _currentStep > 1 ? StepState.complete : StepState.indexed,
             content: Row(
