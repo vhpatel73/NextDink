@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 import '../models/game.dart';
 import 'wizard_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+/// Returns the ordinal suffix for a day number (1→"st", 2→"nd", 3→"rd", 4+→"th")
+String _ordinal(int day) {
+  if (day >= 11 && day <= 13) return '${day}th';
+  switch (day % 10) {
+    case 1: return '${day}st';
+    case 2: return '${day}nd';
+    case 3: return '${day}rd';
+    default: return '${day}th';
+  }
+}
+
+/// Formats a DateTime as "Apr 15th @ 7:58AM"
+String _formatGameTime(DateTime dt) {
+  final month = DateFormat('MMM').format(dt);     // Apr
+  final day   = _ordinal(dt.day);                 // 15th
+  final time  = DateFormat('h:mma').format(dt);   // 7:58AM
+  return '$month $day @ $time';
+}
 
 
 // Returns up to 2 uppercase initials from a name or email string
@@ -102,10 +122,7 @@ class HomeScreen extends StatelessWidget {
                     itemCount: games.length,
                     itemBuilder: (context, index) {
                       final game = games[index];
-                      // Format simple date
-                      // We can add intl package later for better formatting
-                      final dateData = game.scheduledTime;
-                      final dateString = "${dateData.month}/${dateData.day} @ ${dateData.hour}:${dateData.minute.toString().padLeft(2, '0')}";
+                      final dateString = _formatGameTime(game.scheduledTime);
                       
                       final isOrganizer = game.players.isNotEmpty && game.players.first == user?.uid;
                       
