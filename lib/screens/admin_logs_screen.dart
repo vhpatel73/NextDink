@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/audit_log.dart';
 import '../services/logging_service.dart';
+import '../services/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AdminAuditLogsScreen extends StatefulWidget {
@@ -17,7 +18,14 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return StreamBuilder<bool>(
+      stream: AuthService().isAdminStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data == false) {
+          return const Scaffold(body: Center(child: Text('Access Denied')));
+        }
+        
+        return Scaffold(
       appBar: AppBar(
         title: Text(
           'System Audit Logs',
@@ -86,6 +94,8 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 }

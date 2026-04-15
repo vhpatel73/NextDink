@@ -100,15 +100,23 @@ class HomeScreen extends StatelessWidget {
                 title: const Text('My Dashboard'),
                 onTap: () => Navigator.pop(context),
               ),
-              ListTile(
-                leading: const Icon(Icons.admin_panel_settings_outlined, color: Colors.orange),
-                title: const Text('Admin Audit Logs'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminAuditLogsScreen()),
-                  );
+              StreamBuilder<bool>(
+                stream: AuthService().isAdminStream,
+                builder: (context, snapshot) {
+                  if (snapshot.data == true) {
+                    return ListTile(
+                      leading: const Icon(Icons.admin_panel_settings_outlined, color: Colors.orange),
+                      title: const Text('Admin Audit Logs'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AdminAuditLogsScreen()),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
                 },
               ),
               const Divider(color: Colors.white10),
