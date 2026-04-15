@@ -30,7 +30,8 @@ class GameHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = AuthService().currentUser?.uid;
+    final auth = AuthService();
+    final currentUserId = auth.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
