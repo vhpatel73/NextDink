@@ -77,5 +77,9 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NextDink needs your location to show nearby pickleball courts and help you find games.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>NextDink needs photo access so you can upload your player profile picture.</string>
 </dict>
 </plist>
