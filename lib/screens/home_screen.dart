@@ -187,7 +187,7 @@ class HomeScreen extends StatelessWidget {
                                       final isMe = uid == user?.uid;
                                       final showRemove = (isMe && !isOrganizer) || (isOrganizer && !isMe);
 
-                                      return Chip(
+                                       return Chip(
                                         avatar: CircleAvatar(
                                           backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
                                           backgroundColor: Colors.grey.shade800,
@@ -197,7 +197,58 @@ class HomeScreen extends StatelessWidget {
                                         backgroundColor: Colors.black26,
                                         labelStyle: const TextStyle(color: Colors.white),
                                         deleteIcon: showRemove ? const Icon(Icons.close, size: 16) : null,
-                                        onDeleted: showRemove ? () => FirestoreService().leaveGame(game.id, uid) : null,
+                                        onDeleted: showRemove
+                                            ? () {
+                                                showDialog<bool>(
+                                                  context: context,
+                                                  builder: (ctx) => AlertDialog(
+                                                    backgroundColor: const Color(0xFF1E1E1E),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                    title: Row(
+                                                      children: [
+                                                        Icon(
+                                                          isMe ? Icons.exit_to_app : Icons.person_remove,
+                                                          color: Colors.orangeAccent,
+                                                          size: 22,
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        Text(
+                                                          isMe ? 'Leave Game?' : 'Remove Player?',
+                                                          style: const TextStyle(color: Colors.white, fontSize: 18),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    content: Text(
+                                                      isMe
+                                                          ? 'Are you sure you want to leave this game?\nYou can rejoin later if there is space.'
+                                                          : 'Remove $playerName from the roster?\nThey will need a new invite link to rejoin.',
+                                                      style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(ctx, false),
+                                                        child: const Text('Keep', style: TextStyle(color: Colors.white54)),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () => Navigator.pop(ctx, true),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.orangeAccent,
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                        ),
+                                                        child: Text(
+                                                          isMe ? 'Yes, Leave' : 'Yes, Remove',
+                                                          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ).then((confirmed) {
+                                                  if (confirmed == true) {
+                                                    FirestoreService().leaveGame(game.id, uid);
+                                                  }
+                                                });
+                                              }
+                                            : null,
                                       );
                                     }).toList(),
                                   ),
