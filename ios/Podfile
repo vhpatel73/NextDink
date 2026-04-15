@@ -5,16 +5,19 @@ platform :ios, '15.0'
 ENV['COCOAPODS_DISABLE_STATS'] = '1'
 
 def flutter_root
-  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-  unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  flutter_path = `flutter sdk-path`.strip
+  if flutter_path.empty?
+    # Fallback to current behavior if command fails
+    generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+    if File.exist?(generated_xcode_build_settings_path)
+      File.foreach(generated_xcode_build_settings_path) do |line|
+        matches = line.match(/\AFLUTTER_ROOT=(.*)\z/)
+        return matches[1].strip if matches
+      end
+    end
+    raise "Flutter SDK not found. Ensure 'flutter' is in your PATH."
   end
-
-  File.foreach(generated_xcode_build_settings_path) do |line|
-    matches = line.match(/\AFLUTTER_ROOT=(.*)\z/)
-    return matches[1].strip if matches
-  end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig and regenerate it by running flutter pub get"
+  flutter_path
 end
 
 require File.expand_path(File.join('..', 'Flutter', 'podhelper.rb'), __FILE__)
