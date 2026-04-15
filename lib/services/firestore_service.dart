@@ -53,7 +53,7 @@ class FirestoreService {
     return Game.fromFirestore(snapshot);
   }
 
-  // Stream games user is part of (excludes Cancelled; Completed filtered client-side)
+  // Stream games user is part of (Cancelled + Completed filtered client-side)
   Stream<List<Game>> getUserGames() {
     final user = _auth.currentUser;
     if (user == null) return Stream.value([]);
@@ -61,12 +61,11 @@ class FirestoreService {
     return _db
         .collection('games')
         .where('players', arrayContains: user.uid)
-        .where('status', whereNotIn: ['Cancelled'])
         .snapshots()
         .map((snapshot) {
           final games = snapshot.docs
               .map((doc) => Game.fromFirestore(doc))
-              .where((g) => g.isVisible)   // also drops Completed at client
+              .where((g) => g.isVisible) // drops Cancelled + Completed
               .toList();
           games.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
           return games;
