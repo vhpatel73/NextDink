@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 import '../services/firestore_service.dart';
 import 'map_screen.dart';
 
@@ -9,6 +10,16 @@ class CreateGameWizardScreen extends StatefulWidget {
 
   @override
   State<CreateGameWizardScreen> createState() => _CreateGameWizardScreenState();
+}
+
+String _ordinal(int day) {
+  if (day >= 11 && day <= 13) return '${day}th';
+  switch (day % 10) {
+    case 1: return '${day}st';
+    case 2: return '${day}nd';
+    case 3: return '${day}rd';
+    default: return '${day}th';
+  }
 }
 
 class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
@@ -221,7 +232,7 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
             title: const Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: _selectedDate != null && _selectedTime != null && _currentStep > 1
                 ? Text(
-                    '${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year} at ${_selectedTime!.format(context)}',
+                    '${DateFormat('MMM').format(_selectedDate!)} ${_ordinal(_selectedDate!.day)} at ${_selectedTime!.format(context)}',
                     style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13),
                   )
                 : null,
@@ -234,7 +245,7 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
                     onPressed: _pickDate,
                     icon: const Icon(Icons.calendar_today),
                     label: Text(_selectedDate != null 
-                        ? "${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year}"
+                        ? "${DateFormat('MMM').format(_selectedDate!)} ${_ordinal(_selectedDate!.day)}"
                         : 'Select Date'),
                   ),
                 ),
