@@ -58,6 +58,24 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
       initialTime: TimeOfDay.now(),
     );
     if (picked != null) {
+      if (_selectedDate != null) {
+        final now = DateTime.now();
+        final selectedDateTime = DateTime(
+          _selectedDate!.year,
+          _selectedDate!.month,
+          _selectedDate!.day,
+          picked.hour,
+          picked.minute,
+        );
+        if (selectedDateTime.isBefore(now)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cannot pick a time in the past!')),
+            );
+          }
+          return;
+        }
+      }
       setState(() => _selectedTime = picked);
     }
   }
@@ -73,6 +91,13 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
       _selectedTime!.hour,
       _selectedTime!.minute,
     );
+
+    if (scheduledTime.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Wait! You cannot schedule a game in the past.')),
+      );
+      return;
+    }
 
     // Show booking indicator
     ScaffoldMessenger.of(context).showSnackBar(
