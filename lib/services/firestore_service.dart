@@ -85,6 +85,27 @@ class FirestoreService {
         });
   }
 
+  // Stream all games user participated in (for history view)
+  Stream<List<Game>> getUserGameHistory() {
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value([]);
+
+    return _db
+        .collection('games')
+        .where('players', arrayContains: user.uid)
+        .snapshots()
+        .map((snapshot) {
+          final games = snapshot.docs
+              .map((doc) => Game.fromFirestore(doc))
+              .toList();
+          
+          // Sort chronologically: Most recent first
+          games.sort((a, b) => b.scheduledTime.compareTo(a.scheduledTime));
+          
+          return games;
+        });
+  }
+
   // Join a game via Deep Link ID
   Future<String> joinGame(String gameId) async {
     final user = _auth.currentUser;

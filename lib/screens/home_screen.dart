@@ -7,6 +7,7 @@ import '../models/game.dart';
 import 'wizard_screen.dart';
 import '../widgets/app_footer.dart';
 import 'admin_logs_screen.dart';
+import 'game_history_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -99,6 +100,17 @@ class HomeScreen extends StatelessWidget {
                 leading: const Icon(Icons.dashboard, color: Color(0xFFD4F82B)),
                 title: const Text('My Dashboard'),
                 onTap: () => Navigator.pop(context),
+              ),
+              ListTile(
+                leading: const Icon(Icons.history, color: Colors.blueAccent),
+                title: const Text('Match History'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const GameHistoryScreen()),
+                  );
+                },
               ),
               StreamBuilder<bool>(
                 stream: AuthService().isAdminStream,
