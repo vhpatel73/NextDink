@@ -8,6 +8,7 @@ class Game {
   final DateTime scheduledTime;
   final List<String> players;
   final Map<String, Map<String, String>> playerProfiles;
+  final String organizerId;
   final int maxPlayers;
   /// Stored in Firestore only for 'cancelled'. All other statuses are computed.
   final String _storedStatus;
@@ -18,6 +19,7 @@ class Game {
     required this.scheduledTime,
     required this.players,
     required this.playerProfiles,
+    required this.organizerId,
     this.maxPlayers = 4,
     String storedStatus = 'Scheduled',
   }) : _storedStatus = storedStatus;
@@ -61,6 +63,7 @@ class Game {
       scheduledTime: (data['scheduledTime'] as Timestamp).toDate(),
       players: List<String>.from(data['players'] ?? []),
       playerProfiles: parsedProfiles,
+      organizerId: data['organizerId'] ?? (data['players'] as List?)?.first ?? '',
       maxPlayers: data['maxPlayers'] ?? 4,
       storedStatus: data['status'] ?? 'Scheduled',
     );
@@ -72,6 +75,7 @@ class Game {
       'scheduledTime': scheduledTime,
       'players': players,
       'playerProfiles': playerProfiles,
+      'organizerId': organizerId,
       'maxPlayers': maxPlayers,
       'status': _storedStatus,
     };

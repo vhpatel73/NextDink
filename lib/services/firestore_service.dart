@@ -37,6 +37,7 @@ class FirestoreService {
           'photoUrl': determinedPhoto,
         }
       },
+      organizerId: user.uid,
       storedStatus: 'Scheduled',
     );
 

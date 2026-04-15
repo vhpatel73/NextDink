@@ -4,6 +4,8 @@ import '../models/game.dart';
 import '../services/firestore_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/auth_service.dart';
+
 class GameHistoryScreen extends StatelessWidget {
   const GameHistoryScreen({super.key});
 
@@ -28,6 +30,8 @@ class GameHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = AuthService().currentUser?.uid;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -58,9 +62,7 @@ class GameHistoryScreen extends StatelessWidget {
             itemCount: games.length,
             itemBuilder: (context, index) {
               final game = games[index];
-              final isCancelled = game.status == GameStatus.cancelled;
-              final isCompleted = game.status == GameStatus.completed;
-              final isFuture = game.status == GameStatus.scheduled || game.status == GameStatus.inProgress;
+              final isOrganizer = game.organizerId == currentUserId;
 
               return Card(
                 color: const Color(0xFF1A1A1A),
@@ -68,9 +70,19 @@ class GameHistoryScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
-                  title: Text(
-                    game.locationName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          game.locationName,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ),
+                      if (isOrganizer)
+                        _roleChip('Organizer', Colors.purpleAccent)
+                      else
+                        _roleChip('Player', Colors.white38),
+                    ],
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,6 +110,20 @@ class GameHistoryScreen extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _roleChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
       ),
     );
   }
