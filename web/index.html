@@ -33,6 +33,47 @@
   <link rel="manifest" href="manifest.json">
   <!-- Google Maps JavaScript API with Places library -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAg6tV216lYExeG2vU1bXcvf9691oTIIXE&libraries=places&loading=async"></script>
+
+  <!-- Bridge functions: called from Flutter via dart:js -->
+  <script>
+    // Fuzzy autocomplete search via Places AutocompleteService
+    window._placesSearch = function(input, callback) {
+      try {
+        var service = new google.maps.places.AutocompleteService();
+        service.getPlacePredictions(
+          { input: input, componentRestrictions: { country: 'us' } },
+          function(predictions, status) {
+            if (status === 'OK' && predictions) {
+              callback(predictions.map(function(p) { return p.description; }));
+            } else {
+              callback([]);
+            }
+          }
+        );
+      } catch(e) { callback([]); }
+    };
+
+    // Nearby pickleball courts via Places NearbySearch
+    window._nearbyPickleballCourts = function(lat, lng, callback) {
+      try {
+        var mapDiv = document.createElement('div');
+        var map = new google.maps.Map(mapDiv, { center: { lat: lat, lng: lng }, zoom: 14 });
+        var service = new google.maps.places.PlacesService(map);
+        service.nearbySearch(
+          { location: { lat: lat, lng: lng }, radius: 16000, keyword: 'pickleball' },
+          function(results, status) {
+            if (results && results.length > 0) {
+              callback(results.slice(0, 6).map(function(r) {
+                return r.name + (r.vicinity ? ', ' + r.vicinity : '');
+              }));
+            } else {
+              callback([]);
+            }
+          }
+        );
+      } catch(e) { callback([]); }
+    };
+  </script>
 </head>
 <body>
   <!--

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+// ignore: deprecated_member_use
+import 'dart:js' as js;
 import '../services/firestore_service.dart';
 
 class MapScreen extends StatefulWidget {
@@ -203,44 +205,88 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
   final TextEditingController _searchController = TextEditingController();
   List<String> _suggestions = [];
   bool _isSearching = false;
+  bool _loadingNearby = true;
   String? _selectedPlace;
+  List<String> _nearbyCourts = [];
 
-  // Popular pickleball venues to show before user types
-  final List<String> _popularCourts = [
-    'Central Park Pickleball Courts, New York',
-    'East Side Recreation Center, New York',
-    'West Side Tennis & Pickle, New York',
-    'Prospect Park Courts, Brooklyn',
-    'Battery Park City Courts, New York',
-  ];
+  // Debounce timer for search
+  Timer? _debounce;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchNearbyCourts();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Request browser geolocation, then call the JS bridge for nearby courts
+  void _fetchNearbyCourts() {
+    try {
+      js.context['navigator']['geolocation'].callMethod('getCurrentPosition', [
+        js.allowInterop((position) {
+          final lat = (position['coords']['latitude'] as num).toDouble();
+          final lng = (position['coords']['longitude'] as num).toDouble();
+          js.context.callMethod('_nearbyPickleballCourts', [
+            lat,
+            lng,
+            js.allowInterop((js.JsArray results) {
+              if (!mounted) return;
+              setState(() {
+                _nearbyCourts = results.map((r) => r.toString()).toList();
+                _loadingNearby = false;
+              });
+            }),
+          ]);
+        }),
+        js.allowInterop((_) {
+          // Permission denied or error — clear loading
+          if (mounted) setState(() => _loadingNearby = false);
+        }),
+      ]);
+    } catch (_) {
+      if (mounted) setState(() => _loadingNearby = false);
+    }
+  }
+
+  /// Call Places AutocompleteService via JS bridge with debounce
   void _onSearchChanged(String value) {
+    _debounce?.cancel();
     if (value.trim().isEmpty) {
-      setState(() {
-        _suggestions = [];
-        _isSearching = false;
-      });
+      setState(() { _suggestions = []; _isSearching = false; });
       return;
     }
-
-    setState(() {
-      _isSearching = true;
-      // Filter popular courts + allow free text
-      _suggestions = _popularCourts
-          .where((c) => c.toLowerCase().contains(value.toLowerCase()))
-          .toList();
-      if (_suggestions.isEmpty) {
-        _suggestions = ['Use: "$value" as location'];
+    setState(() => _isSearching = true);
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      try {
+        js.context.callMethod('_placesSearch', [
+          value,
+          js.allowInterop((js.JsArray results) {
+            if (!mounted) return;
+            final places = results.map((r) => r.toString()).toList();
+            setState(() {
+              _suggestions = places.isNotEmpty ? places : ['Use "$value" as location name'];
+              _isSearching = false;
+            });
+          }),
+        ]);
+      } catch (_) {
+        // Fallback if JS bridge not ready yet
+        if (mounted) setState(() { _suggestions = ['Use "$value" as location name']; _isSearching = false; });
       }
-      _isSearching = false;
     });
   }
 
   void _selectSuggestion(String suggestion) {
-    final location = suggestion.startsWith('Use: "')
-        ? suggestion.replaceFirst('Use: "', '').replaceAll('"', '').replaceAll(' as location', '')
+    final isFreeText = suggestion.startsWith('Use "') && suggestion.endsWith('" as location name');
+    final location = isFreeText
+        ? suggestion.replaceFirst('Use "', '').replaceAll('" as location name', '')
         : suggestion;
-
     setState(() {
       _selectedPlace = location;
       _searchController.text = location;
@@ -293,7 +339,15 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
                     decoration: InputDecoration(
                       hintText: 'Search for a pickleball court or address...',
                       hintStyle: const TextStyle(color: Colors.white38),
-                      prefixIcon: Icon(Icons.search, color: neon),
+                      prefixIcon: _isSearching
+                          ? Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: neon),
+                              ),
+                            )
+                          : Icon(Icons.search, color: neon),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear, color: Colors.white38),
@@ -312,7 +366,7 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
 
                 const SizedBox(height: 12),
 
-                // Suggestions list
+                // Autocomplete suggestions
                 if (_suggestions.isNotEmpty)
                   Container(
                     decoration: BoxDecoration(
@@ -324,7 +378,7 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
                       children: _suggestions.asMap().entries.map((entry) {
                         final i = entry.key;
                         final s = entry.value;
-                        final isFreeText = s.startsWith('Use: "');
+                        final isFreeText = s.startsWith('Use "');
                         return Column(
                           children: [
                             ListTile(
@@ -344,35 +398,61 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
                     ),
                   ),
 
-                // Popular courts when no search
+                // Nearby courts list (shown when search box is empty)
                 if (_suggestions.isEmpty && _searchController.text.isEmpty) ...[
                   const SizedBox(height: 8),
-                  const Text('Popular Courts', style: TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 1.0)),
-                  const SizedBox(height: 8),
-                  ..._popularCourts.map((court) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: GestureDetector(
-                      onTap: () => _selectSuggestion(court),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white10),
+                  Row(
+                    children: [
+                      Icon(Icons.near_me, color: neon, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        _loadingNearby ? 'Finding courts near you...' : 'Courts Near You',
+                        style: const TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 1.0),
+                      ),
+                      if (_loadingNearby) ...[
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 10, height: 10,
+                          child: CircularProgressIndicator(strokeWidth: 1.5, color: neon),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.sports_tennis_rounded, color: neon, size: 18),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(court, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                            ),
-                            const Icon(Icons.chevron_right, color: Colors.white24, size: 18),
-                          ],
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (!_loadingNearby)
+                    ..._nearbyCourts.map((court) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () => _selectSuggestion(court),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1A1A1A),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.sports_tennis_rounded, color: neon, size: 18),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(court, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                              ),
+                              const Icon(Icons.chevron_right, color: Colors.white24, size: 18),
+                            ],
+                          ),
                         ),
                       ),
+                    )),
+                  if (!_loadingNearby && _nearbyCourts.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Text(
+                        'No nearby courts found. Try searching above.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white38, fontSize: 13),
+                      ),
                     ),
-                  )),
                 ],
 
                 const Spacer(),
