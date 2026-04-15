@@ -189,18 +189,17 @@ class HomeScreen extends StatelessWidget {
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
-                              minHeight: MediaQuery.of(context).size.height - 150, // Enough to push footer
+                              minHeight: MediaQuery.of(context).size.height - 200, 
                             ),
-                            child: Column(
+                            child: const Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Spacer(),
-                                const Text(
+                                SizedBox(height: 100), // Push text down
+                                Text(
                                   'No games scheduled yet.',
                                   style: TextStyle(color: Colors.white54, fontSize: 16),
                                 ),
-                                const Spacer(),
-                                const AppFooter(),
+                                AppFooter(),
                               ],
                             ),
                           ),

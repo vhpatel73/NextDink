@@ -149,175 +149,169 @@ class _CreateGameWizardScreenState extends State<CreateGameWizardScreen> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 700,
-                minHeight: MediaQuery.of(context).size.height - 100, // Safe area + appBar
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Stepper(
-                    physics: const NeverScrollableScrollPhysics(), // Scroll handled by parent
-                    currentStep: _currentStep,
-        onStepContinue: () {
-          if (_currentStep == 0 && _selectedLocation == null && _locationController.text.trim().isEmpty) return;
-          if (_currentStep == 0 && _selectedLocation == null) {
-             _selectedLocation = _locationController.text.trim();
-          }
+        child: ListView(
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Stepper(
+                  physics: const NeverScrollableScrollPhysics(),
+                  currentStep: _currentStep,
+                  onStepContinue: () {
+                    if (_currentStep == 0 && _selectedLocation == null && _locationController.text.trim().isEmpty) return;
+                    if (_currentStep == 0 && _selectedLocation == null) {
+                       _selectedLocation = _locationController.text.trim();
+                    }
 
-          if (_currentStep == 1 && (_selectedDate == null || _selectedTime == null)) return;
-          
-          if (_currentStep == 2) {
-            _submitAndShare();
-          } else {
-            setState(() => _currentStep += 1);
-          }
-        },
-        onStepCancel: () {
-          if (_currentStep > 0) {
-            setState(() => _currentStep -= 1);
-          } else {
-            Navigator.pop(context);
-          }
-        },
-        controlsBuilder: (BuildContext context, ControlsDetails details) {
-          final isLastStep = _currentStep == 2;
-          return Padding(
-            padding: const EdgeInsets.only(top: 24.0),
-            child: Row(
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: details.onStepContinue,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: Text(isLastStep ? 'Book & Share Invites' : 'Continue'),
-                ),
-                const SizedBox(width: 8),
-                TextButton(
-                  onPressed: details.onStepCancel,
-                  child: Text(_currentStep == 0 ? 'Cancel' : 'Back', style: const TextStyle(color: Colors.white54)),
-                ),
-              ],
-            ),
-          );
-        },
-        steps: [
-          Step(
-            title: const Text('Court Location', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: _selectedLocation != null && _currentStep > 0
-                ? Text(_selectedLocation!, style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13))
-                : null,
-            isActive: _currentStep >= 0,
-            state: _currentStep > 0 ? StepState.complete : StepState.indexed,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (isLocalhost)
-                  TextField(
-                    controller: _locationController,
-                    decoration: const InputDecoration(
-                      labelText: 'Court Name (Local Testing)',
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (val) => _selectedLocation = val,
-                  )
-                else
-                  ElevatedButton.icon(
-                    onPressed: _pickLocation,
-                    icon: const Icon(Icons.map),
-                    label: Text(_selectedLocation ?? 'Pick Location from Map'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Step(
-            title: const Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: _selectedDate != null && _selectedTime != null && _currentStep > 1
-                ? Text(
-                    '${DateFormat('MMM').format(_selectedDate!)} ${_ordinal(_selectedDate!.day)} at ${_selectedTime!.format(context)}',
-                    style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13),
-                  )
-                : null,
-            isActive: _currentStep >= 1,
-            state: _currentStep > 1 ? StepState.complete : StepState.indexed,
-            content: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _pickDate,
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(_selectedDate != null 
-                        ? "${DateFormat('MMM').format(_selectedDate!)} ${_ordinal(_selectedDate!.day)}"
-                        : 'Select Date'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _pickTime,
-                    icon: const Icon(Icons.access_time),
-                    label: Text(_selectedTime != null 
-                        ? _selectedTime!.format(context)
-                        : 'Select Time'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Step(
-            title: const Text('Confirm & Invite', style: TextStyle(fontWeight: FontWeight.bold)),
-            isActive: _currentStep >= 2,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('Ready to book! Once you finish, your systems\'s native share sheet will immediately pop up so you can group text the Invite Deep-Link to your friends!', style: TextStyle(color: Colors.white70)),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E1E),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on, color: Color(0xFFD4F82B)),
+                    if (_currentStep == 1 && (_selectedDate == null || _selectedTime == null)) return;
+                    
+                    if (_currentStep == 2) {
+                      _submitAndShare();
+                    } else {
+                      setState(() => _currentStep += 1);
+                    }
+                  },
+                  onStepCancel: () {
+                    if (_currentStep > 0) {
+                      setState(() => _currentStep -= 1);
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  controlsBuilder: (BuildContext context, ControlsDetails details) {
+                    final isLastStep = _currentStep == 2;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 24.0),
+                      child: Row(
+                        children: <Widget>[
+                          ElevatedButton(
+                            onPressed: details.onStepContinue,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.black,
+                            ),
+                            child: Text(isLastStep ? 'Book & Share Invites' : 'Continue'),
+                          ),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(_selectedLocation ?? '', style: const TextStyle(fontWeight: FontWeight.bold))),
+                          TextButton(
+                            onPressed: details.onStepCancel,
+                            child: Text(_currentStep == 0 ? 'Cancel' : 'Back', style: const TextStyle(color: Colors.white54)),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                       Row(
+                    );
+                  },
+                  steps: [
+                    Step(
+                      title: const Text('Court Location', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: _selectedLocation != null && _currentStep > 0
+                          ? Text(_selectedLocation!, style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13))
+                          : null,
+                      isActive: _currentStep >= 0,
+                      state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+                      content: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Icon(Icons.schedule, color: Color(0xFFD4F82B)),
-                          const SizedBox(width: 8),
-                          Text(_selectedDate != null && _selectedTime != null 
-                            ? "${_selectedDate!.month}/${_selectedDate!.day} at ${_selectedTime!.format(context)}" 
-                            : ''),
+                          if (isLocalhost)
+                            TextField(
+                              controller: _locationController,
+                              decoration: const InputDecoration(
+                                labelText: 'Court Name (Local Testing)',
+                                border: OutlineInputBorder(),
+                              ),
+                              onChanged: (val) => _selectedLocation = val,
+                            )
+                          else
+                            ElevatedButton.icon(
+                              onPressed: _pickLocation,
+                              icon: const Icon(Icons.map),
+                              label: Text(_selectedLocation ?? 'Pick Location from Map'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                            ),
                         ],
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
-          ),
-                  const AppFooter(),
-                ],
+                      ),
+                    ),
+                    Step(
+                      title: const Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: _selectedDate != null && _selectedTime != null && _currentStep > 1
+                          ? Text(
+                              '${DateFormat('MMM').format(_selectedDate!)} ${_ordinal(_selectedDate!.day)} at ${_selectedTime!.format(context)}',
+                              style: const TextStyle(color: Color(0xFFD4F82B), fontSize: 13),
+                            )
+                          : null,
+                      isActive: _currentStep >= 1,
+                      state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+                      content: Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _pickDate,
+                              icon: const Icon(Icons.calendar_today),
+                              label: Text(_selectedDate != null 
+                                  ? "${DateFormat('MMM').format(_selectedDate!)} ${_ordinal(_selectedDate!.day)}"
+                                  : 'Select Date'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _pickTime,
+                              icon: const Icon(Icons.access_time),
+                              label: Text(_selectedTime != null 
+                                  ? _selectedTime!.format(context)
+                                  : 'Select Time'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Step(
+                      title: const Text('Confirm & Invite', style: TextStyle(fontWeight: FontWeight.bold)),
+                      isActive: _currentStep >= 2,
+                      content: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text('Ready to book! Once you finish, your systems\'s native share sheet will immediately pop up so you can group text the Invite Deep-Link to your friends!', style: TextStyle(color: Colors.white70)),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E1E1E),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on, color: Color(0xFFD4F82B)),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: Text(_selectedLocation ?? '', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                 Row(
+                                  children: [
+                                    const Icon(Icons.schedule, color: Color(0xFFD4F82B)),
+                                    const SizedBox(width: 8),
+                                    Text(_selectedDate != null && _selectedTime != null 
+                                      ? "${_selectedDate!.month}/${_selectedDate!.day} at ${_selectedTime!.format(context)}" 
+                                      : ''),
+                                  ],
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+            const AppFooter(),
+          ],
         ),
       ),
     );

@@ -108,11 +108,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               padding: const EdgeInsets.symmetric(vertical: 40.0),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 800),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: MediaQuery.of(context).size.height - 80, // Safe area + padding
-                              ),
+                  constraints: BoxConstraints(
+                    maxWidth: 800,
+                    minHeight: MediaQuery.of(context).size.height - 80,
+                  ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -235,7 +234,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               ),
                             ),
                 ),
-              ),
             ),
           ),
         ],
