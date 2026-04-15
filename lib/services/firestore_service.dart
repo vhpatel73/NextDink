@@ -6,11 +6,6 @@ class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Book a new game (Legacy fallback)
-  Future<void> bookGame(String locationName, DateTime scheduledTime) async {
-    await createGameAndGetId(locationName, scheduledTime);
-  }
-
   // Book a new game and immediately return its Firestore ID for Deep Linking
   Future<String> createGameAndGetId(String locationName, DateTime scheduledTime) async {
     final user = _auth.currentUser;

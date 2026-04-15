@@ -104,7 +104,7 @@ class _MapScreenState extends State<MapScreen> {
                   final scheduledTime = DateTime.now()
                       .add(const Duration(days: 1))
                       .copyWith(hour: 17, minute: 0, second: 0);
-                  await FirestoreService().bookGame(courtName, scheduledTime);
+                  await FirestoreService().createGameAndGetId(courtName, scheduledTime);
                   if (context.mounted) {
                     Navigator.pop(context);
                     Navigator.pop(context);
@@ -302,7 +302,7 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
         final scheduledTime = DateTime.now()
             .add(const Duration(days: 1))
             .copyWith(hour: 17, minute: 0, second: 0);
-        FirestoreService().bookGame(_selectedPlace!, scheduledTime);
+        FirestoreService().createGameAndGetId(_selectedPlace!, scheduledTime);
         Navigator.pop(context);
         Navigator.pop(context);
       }
