@@ -303,96 +303,109 @@ class HomeScreen extends StatelessWidget {
                             ),
 
                             // ── Action Footer ──────────────────────────────
-                            const Divider(height: 1, color: Colors.white10),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              child: Row(
+                            // only render footer when at least one action is available
+                            Builder(builder: (_) {
+                              final canShare  = game.status != GameStatus.completed;
+                              final canCancel = isOrganizer && game.status == GameStatus.scheduled;
+                              if (!canShare && !canCancel) return const SizedBox.shrink();
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Share button
-                                  Expanded(
-                                    child: TextButton.icon(
-                                      onPressed: () {
-                                        final String baseUrl = kIsWeb ? Uri.base.origin : 'https://nextdink-11.web.app';
-                                        final inviteLink = '$baseUrl/join?gameId=${game.id}';
-                                        Share.share('Dink with me! Join my Pickleball game at ${game.locationName}\n\nTap here to accept: $inviteLink');
-                                      },
-                                      icon: Icon(Icons.ios_share_rounded, size: 18, color: Theme.of(context).colorScheme.primary),
-                                      label: Text(
-                                        'Share Invite',
-                                        style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
-                                      ),
+                                  const Divider(height: 1, color: Colors.white10),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        // Share Invite — Scheduled + In-Progress only
+                                        if (canShare)
+                                          Expanded(
+                                            child: TextButton.icon(
+                                              onPressed: () {
+                                                final String baseUrl = kIsWeb ? Uri.base.origin : 'https://nextdink-11.web.app';
+                                                final inviteLink = '$baseUrl/join?gameId=${game.id}';
+                                                Share.share('Dink with me! Join my Pickleball game at ${game.locationName}\n\nTap here to accept: $inviteLink');
+                                              },
+                                              icon: Icon(Icons.ios_share_rounded, size: 18, color: Theme.of(context).colorScheme.primary),
+                                              label: Text(
+                                                'Share Invite',
+                                                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
+                                              ),
+                                            ),
+                                          ),
+
+                                        // Divider between buttons
+                                        if (canShare && canCancel)
+                                          Container(width: 1, height: 32, color: Colors.white10),
+
+                                        // Cancel Game — Scheduled + organizer only
+                                        if (canCancel)
+                                          Expanded(
+                                            child: TextButton.icon(
+                                              onPressed: () async {
+                                                final confirmed = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (ctx) => AlertDialog(
+                                                    backgroundColor: const Color(0xFF1E1E1E),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                    title: const Row(
+                                                      children: [
+                                                        Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 22),
+                                                        SizedBox(width: 8),
+                                                        Text('Cancel Game?', style: TextStyle(color: Colors.white, fontSize: 18)),
+                                                      ],
+                                                    ),
+                                                    content: Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          game.locationName,
+                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                        ),
+                                                        Text(dateString, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                                                        const SizedBox(height: 12),
+                                                        const Text(
+                                                          'The game will be marked as Cancelled. The record is kept for history but removed from all players\' dashboards.',
+                                                          style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(ctx, false),
+                                                        child: const Text('Keep Game', style: TextStyle(color: Colors.white54)),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () => Navigator.pop(ctx, true),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.redAccent,
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                        ),
+                                                        child: const Text('Yes, Cancel It', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirmed == true) {
+                                                  FirestoreService().cancelGame(game.id);
+                                                }
+                                              },
+                                              icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.redAccent),
+                                              label: const Text(
+                                                'Cancel Game',
+                                                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-
-                                  // Vertical divider between buttons
-                                  if (isOrganizer)
-                                    Container(width: 1, height: 32, color: Colors.white10),
-
-                                  // Cancel Game — organizer only
-                                  if (isOrganizer)
-                                    Expanded(
-                                      child: TextButton.icon(
-                                        onPressed: () async {
-                                          final confirmed = await showDialog<bool>(
-                                            context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              backgroundColor: const Color(0xFF1E1E1E),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                              title: const Row(
-                                                children: [
-                                                  Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 22),
-                                                  SizedBox(width: 8),
-                                                  Text('Cancel Game?', style: TextStyle(color: Colors.white, fontSize: 18)),
-                                                ],
-                                              ),
-                                              content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    game.locationName,
-                                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                                  ),
-                                                  Text(dateString, style: const TextStyle(color: Colors.white54, fontSize: 13)),
-                                                  const SizedBox(height: 12),
-                                                  const Text(
-                                                    'The game will be marked as Cancelled. The record is kept for history but removed from all players\' dashboards.',
-                                                    style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
-                                                  ),
-                                                ],
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(ctx, false),
-                                                  child: const Text('Keep Game', style: TextStyle(color: Colors.white54)),
-                                                ),
-                                                ElevatedButton(
-                                                  onPressed: () => Navigator.pop(ctx, true),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.redAccent,
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                  ),
-                                                  child: const Text('Yes, Cancel It', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                          if (confirmed == true) {
-                                            FirestoreService().cancelGame(game.id);
-                                          }
-                                        },
-                                        icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.redAccent),
-                                        label: const Text(
-                                          'Cancel Game',
-                                          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                    ),
                                 ],
-                              ),
-                            ),
+                              );
+                            }),
                           ],
                         ),
+
                       );
                     },
                   );
