@@ -5,19 +5,7 @@ platform :ios, '15.0'
 ENV['COCOAPODS_DISABLE_STATS'] = '1'
 
 def flutter_root
-  flutter_path = `flutter sdk-path`.strip
-  if flutter_path.empty?
-    # Fallback to current behavior if command fails
-    generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-    if File.exist?(generated_xcode_build_settings_path)
-      File.foreach(generated_xcode_build_settings_path) do |line|
-        matches = line.match(/\AFLUTTER_ROOT=(.*)\z/)
-        return matches[1].strip if matches
-      end
-    end
-    raise "Flutter SDK not found. Ensure 'flutter' is in your PATH."
-  end
-  flutter_path
+  '/opt/homebrew/share/flutter'
 end
 
 require File.expand_path(File.join('..', 'Flutter', 'podhelper.rb'), __FILE__)
