@@ -40,6 +40,23 @@ String _getInitials(String name) {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  Widget _footerLink(String label) {
+    return GestureDetector(
+      onTap: () {}, // Placeholders
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _footerBullet() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      child: Text('•', style: TextStyle(color: Colors.white12, fontSize: 10)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = AuthService().currentUser;
@@ -119,8 +136,46 @@ class HomeScreen extends StatelessWidget {
                   }
 
                   return ListView.builder(
-                    itemCount: games.length,
+                    itemCount: games.length + 1, // Add 1 for the footer
                     itemBuilder: (context, index) {
+                      if (index == games.length) {
+                        // ── Footer ──────────────────────────────
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40.0),
+                          child: Column(
+                            children: [
+                              const Divider(indent: 64, endIndent: 64, color: Colors.white10),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'NextDink v1.1',
+                                style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Dink responsibly! 🥒',
+                                style: TextStyle(color: Colors.white24, fontSize: 11),
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _footerLink('Privacy'),
+                                  _footerBullet(),
+                                  _footerLink('Terms'),
+                                  _footerBullet(),
+                                  _footerLink('Support'),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                '© 2026 NextDink',
+                                style: TextStyle(color: Colors.white10, fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
                       final game = games[index];
                       final dateString = _formatGameTime(game.scheduledTime);
                       
