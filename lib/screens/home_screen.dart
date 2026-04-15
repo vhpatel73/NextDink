@@ -139,9 +139,10 @@ class HomeScreen extends StatelessWidget {
                                 image: DecorationImage(
                                   image: const AssetImage('assets/swing.png'),
                                   fit: BoxFit.cover,
+                                  alignment: Alignment.center,
                                   colorFilter: ColorFilter.mode(
-                                    const Color(0xFF010101).withOpacity(0.9), 
-                                    BlendMode.srcATop,
+                                    const Color(0xFF010101).withOpacity(0.2), 
+                                    BlendMode.dstATop,
                                   ),
                                 ),
                               ),
