@@ -141,29 +141,75 @@ class HomeScreen extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  // Player count badge
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.4)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.group, size: 14, color: Theme.of(context).colorScheme.primary),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${game.players.length}/${game.maxPlayers}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            color: Theme.of(context).colorScheme.primary,
+                                  // Status + player count badges
+                                  Row(
+                                    children: [
+                                      // Status badge
+                                      Builder(builder: (_) {
+                                        final isInProgress = game.status == GameStatus.inProgress;
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: isInProgress
+                                                ? Colors.orangeAccent.withOpacity(0.15)
+                                                : Colors.green.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: isInProgress
+                                                  ? Colors.orangeAccent.withOpacity(0.5)
+                                                  : Colors.green.withOpacity(0.4),
+                                            ),
                                           ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 6,
+                                                height: 6,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: isInProgress ? Colors.orangeAccent : Colors.green,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                game.statusLabel,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isInProgress ? Colors.orangeAccent : Colors.green,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                      const SizedBox(width: 8),
+                                      // Player count badge
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.4)),
                                         ),
-                                      ],
-                                    ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.group, size: 14, color: Theme.of(context).colorScheme.primary),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${game.players.length}/${game.maxPlayers}',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                                color: Theme.of(context).colorScheme.primary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -310,7 +356,7 @@ class HomeScreen extends StatelessWidget {
                                                   Text(dateString, style: const TextStyle(color: Colors.white54, fontSize: 13)),
                                                   const SizedBox(height: 12),
                                                   const Text(
-                                                    'This will permanently remove the game for all players. This cannot be undone.',
+                                                    'The game will be marked as Cancelled. The record is kept for history but removed from all players\' dashboards.',
                                                     style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
                                                   ),
                                                 ],
@@ -332,7 +378,7 @@ class HomeScreen extends StatelessWidget {
                                             ),
                                           );
                                           if (confirmed == true) {
-                                            FirestoreService().deleteGame(game.id);
+                                            FirestoreService().cancelGame(game.id);
                                           }
                                         },
                                         icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.redAccent),

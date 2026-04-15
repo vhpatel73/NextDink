@@ -31,7 +31,7 @@ class FirestoreService {
       id: gameRef.id,
       locationName: locationName,
       scheduledTime: scheduledTime,
-      players: [user.uid], // Creator gets the first spot
+      players: [user.uid],
       playerProfiles: {
         user.uid: {
           'name': determinedName,
@@ -39,6 +39,7 @@ class FirestoreService {
           'photoUrl': determinedPhoto,
         }
       },
+      storedStatus: 'Scheduled',
     );
 
     await gameRef.set(newGame.toFirestore());
@@ -52,7 +53,7 @@ class FirestoreService {
     return Game.fromFirestore(snapshot);
   }
 
-  // Stream games user is part of
+  // Stream games user is part of (excludes Cancelled; Completed filtered client-side)
   Stream<List<Game>> getUserGames() {
     final user = _auth.currentUser;
     if (user == null) return Stream.value([]);
@@ -60,12 +61,12 @@ class FirestoreService {
     return _db
         .collection('games')
         .where('players', arrayContains: user.uid)
-        // Ordering by time might require a composite index in production
-        // so we retrieve it ordered by default Firebase rules and sort local
+        .where('status', whereNotIn: ['Cancelled'])
         .snapshots()
         .map((snapshot) {
           final games = snapshot.docs
               .map((doc) => Game.fromFirestore(doc))
+              .where((g) => g.isVisible)   // also drops Completed at client
               .toList();
           games.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
           return games;
@@ -133,8 +134,8 @@ class FirestoreService {
     });
   }
 
-  // Delete an entire game
-  Future<void> deleteGame(String gameId) async {
-    await _db.collection('games').doc(gameId).delete();
+  // Soft-cancel a game: marks status as 'Cancelled', never deletes the record
+  Future<void> cancelGame(String gameId) async {
+    await _db.collection('games').doc(gameId).update({'status': 'Cancelled'});
   }
 }
