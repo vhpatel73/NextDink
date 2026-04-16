@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
-// ignore: deprecated_member_use
-import 'dart:js' as js;
+import '../services/js_service.dart';
 import '../services/firestore_service.dart';
 
 class MapScreen extends StatefulWidget {
@@ -227,31 +226,13 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
 
   /// Request browser geolocation, then call the JS bridge for nearby courts
   void _fetchNearbyCourts() {
-    try {
-      js.context['navigator']['geolocation'].callMethod('getCurrentPosition', [
-        js.allowInterop((position) {
-          final lat = (position['coords']['latitude'] as num).toDouble();
-          final lng = (position['coords']['longitude'] as num).toDouble();
-          js.context.callMethod('_nearbyPickleballCourts', [
-            lat,
-            lng,
-            js.allowInterop((js.JsArray results) {
-              if (!mounted) return;
-              setState(() {
-                _nearbyCourts = results.map((r) => r.toString()).toList();
-                _loadingNearby = false;
-              });
-            }),
-          ]);
-        }),
-        js.allowInterop((_) {
-          // Permission denied or error — clear loading
-          if (mounted) setState(() => _loadingNearby = false);
-        }),
-      ]);
-    } catch (_) {
-      if (mounted) setState(() => _loadingNearby = false);
-    }
+    JsService.fetchNearbyCourts((results) {
+      if (!mounted) return;
+      setState(() {
+        _nearbyCourts = results;
+        _loadingNearby = false;
+      });
+    });
   }
 
   /// Call Places AutocompleteService via JS bridge with debounce
@@ -263,22 +244,13 @@ class _WebPlacesPickerState extends State<_WebPlacesPicker> {
     }
     setState(() => _isSearching = true);
     _debounce = Timer(const Duration(milliseconds: 350), () {
-      try {
-        js.context.callMethod('_placesSearch', [
-          value,
-          js.allowInterop((js.JsArray results) {
-            if (!mounted) return;
-            final places = results.map((r) => r.toString()).toList();
-            setState(() {
-              _suggestions = places.isNotEmpty ? places : ['Use "$value" as location name'];
-              _isSearching = false;
-            });
-          }),
-        ]);
-      } catch (_) {
-        // Fallback if JS bridge not ready yet
-        if (mounted) setState(() { _suggestions = ['Use "$value" as location name']; _isSearching = false; });
-      }
+      JsService.searchPlaces(value, (results) {
+        if (!mounted) return;
+        setState(() {
+          _suggestions = results.isNotEmpty ? results : ['Use "$value" as location name'];
+          _isSearching = false;
+        });
+      });
     });
   }
 
